@@ -33,9 +33,7 @@ contract SkincareProduct {
     
     //  address of the cusd token
     address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
-    
-    // admin address
-    address ownerAddress;
+
 
 // struct containing product data
     struct Product {
@@ -49,8 +47,8 @@ contract SkincareProduct {
         uint sales;
     }
 
-// map product struck to an integer
-    mapping (uint => Product) internal products;
+    // map product struck to an integer
+    mapping (uint => Product) private products;
     
     // event to e triggered when product is ordered
     event ProductOrdered (
@@ -58,30 +56,25 @@ contract SkincareProduct {
         uint productId
     );
     
-    // admin modifier
-    modifier isAdmin(){
-        require(msg.sender == ownerAddress, "You are not an admin");
-        _;
-    }
-    
-    
-    // constructor
-    constructor(){
-        ownerAddress = msg.sender;
-    }
-    
+
     
 
 
-// save a particular product to the blockchain
+    /// @dev save a particular product to the blockchain
+    /// @notice Input needs to contain only valid values
     function addProduct(
-        string memory _brand,
-        string memory _image,
-        string memory _category, 
-        string memory _deliveredWithin,
+        string calldata _brand,
+        string calldata _image,
+        string calldata _category, 
+        string calldata _deliveredWithin,
         uint _numberOfStock,
         uint _amount
     ) public {
+        require(bytes(_brand).length > 0, "Empty brand");
+        require(bytes(_image).length > 0, "Empty image");
+        require(bytes(_category).length > 0, "Empty category");
+        require(bytes(_deliveredWithin).length > 0, "Empty delivery date");
+        require(_numberOfStock > 0, "Please enter a valid number of stock ");
         require(_amount > 0, "Please enter a valid amount");
         
         products[productsLength] = Product(
@@ -97,7 +90,7 @@ contract SkincareProduct {
         productsLength++;
     }
 
-// get a particular product
+    /// @dev get a particular product
     function getProduct(uint _index) public view returns (
         address payable,
         string memory, 
@@ -121,22 +114,25 @@ contract SkincareProduct {
         );
     }
     
-    // order a product
-
+    /// @dev  orders a product
     function orderProduct(uint _index) public payable  {
+        Product storage currentProduct = products[_index];
+        require(currentProduct.numberOfStock > 0, "Not enough products in stock to fulfill this order");
+        require(currentProduct.owner != msg.sender, "You can't your products");
+        currentProduct.numberOfStock--;
+        currentProduct.sales++;
         require(
           IERC20Token(cUsdTokenAddress).transferFrom(
             msg.sender,
-            products[_index].owner,
-            products[_index].amount
+            currentProduct.owner,
+            currentProduct.amount
           ),
           "Transfer failed."
         );
-        products[_index].sales++;
         emit ProductOrdered(msg.sender, _index);
     }
     
-    // get product length
+    /// @dev get product length
     function getProductLength() public view returns (uint) {
         return (productsLength);
     }
