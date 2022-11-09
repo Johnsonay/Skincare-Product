@@ -55,10 +55,13 @@ contract SkincareProduct {
         address _from,
         uint productId
     );
-    
 
+    // To prevent to access permission from 3rd persons
+    modifier isOwner(uint _index) {
+        require(msg.sender == products[_index].owner, "NOT_OWNER");
+        _;
+    }
     
-
 
     /// @dev save a particular product to the blockchain
     /// @notice Input needs to contain only valid values
@@ -130,6 +133,19 @@ contract SkincareProduct {
           "Transfer failed."
         );
         emit ProductOrdered(msg.sender, _index);
+    }
+
+    function editQuantity(uint _index, uint edit) public  isOwner(_index){
+         Product storage currentProduct = products[_index];  
+        require(currentProduct.owner == msg.sender, "You are not the owner")
+        require(currentProduct.numberOfStock == 0, "There are still products")
+        require(edit > 0, "Input cannot be 0")
+     
+      currentProduct.numberOfStock += edit; 
+    }
+
+    function deleteQuantity(uint _index) public isOwner(_index){
+        delete products[_index];
     }
     
     /// @dev get product length
