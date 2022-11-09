@@ -122,8 +122,6 @@ contract SkincareProduct {
         Product storage currentProduct = products[_index];
         require(currentProduct.numberOfStock > 0, "Not enough products in stock to fulfill this order");
         require(currentProduct.owner != msg.sender, "You can't your products");
-        currentProduct.numberOfStock--;
-        currentProduct.sales++;
         require(
           IERC20Token(cUsdTokenAddress).transferFrom(
             msg.sender,
@@ -132,6 +130,8 @@ contract SkincareProduct {
           ),
           "Transfer failed."
         );
+        currentProduct.numberOfStock--;
+        currentProduct.sales++;
         emit ProductOrdered(msg.sender, _index);
     }
 
