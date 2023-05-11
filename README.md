@@ -1,24 +1,44 @@
 ---
-title: Skincare Movie Ticketing Smart Contract on the Celo Blockchain
+## title: Skincare Movie Ticketing Smart Contract on the Celo Blockchain
 description: In this tutorial, you'll learn how to create a skincare product on Celo Blockchain
 authors:
   - name: Johnson Abu
 ---
+
+## Table of Contents
+
+- [Skincare Movie Ticketing Smart Contract on the Celo Blockchain](#Skincare-Movie-Ticketing-Smart-Contract-on-the-Celo-Blockchain)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#Introduction)
+  - [Objective](#objective)
+  - [Prerequisites](#Prerequisites)
+  - [SmartContract](#SmartContract)
+    - [Smart Contract Explanation?](#Smart-Contract-Explanation?)
+  - [Deployment Of the Contract](#Deployment-Of-the-Contract)
+  - [Frontend](#Frontend)
+    - [App.js](#App.js)
+    - [Carousel.jsx](#Carousel.jsx) 
+    - [Form.jsx](#Form.jsx) 
+    - [productCard.jsx](#productCard.jsx) 
+  - [Conclusion](#Conclusion)
+  - [Next Steps](#Next-Steps)
+
 
 ## Introduction
 
 In this tutorial, we will be explaining a Solidity smart contract called "SkincareProduct". The contract allows users to add skincare products and order them using a custom token called "cUSD". We'll go through each section of the code, explain its purpose, and provide additional information where necessary
 ## Prerequisites
 
-To follow along with this tutorial, you should have a basic understanding of Solidity and smart contracts.
+To follow along with this tutorial, you should have a basic understanding of [Solidity](https://soliditylang.org/) and smart contracts.
 
 Also a basic understanding of web development, which should comprise of Javascript and React.
 
 You should also have an environment set up to deploy and interact with:
 
-- smart contracts, such as Remix
-- Node.js and npm installed on your machine
-- A Celo wallet or Celo-compatible wallet extension installed in your browser (e.g., Celo Extension Wallet)
+- smart contracts, such as [Remix](https://remix.ethereum.org/)
+- [Node.js](https://nodejs.org/en) 
+- Node Package Manager [npm](https://docs.npmjs.com/)
+- A [Celo wallet ](https://celowallet.app/setup) or Celo-compatible wallet extension installed in your browser (e.g. [MetaMask Wallet](https://metamask.io/download/))
 
 ## SmartContract
 
@@ -343,6 +363,26 @@ function getProductLength() public view returns (uint) {
 
 The `getProductLength` function returns the total number of products that have been added to the contract.
 
+## Deployment Of the Contract
+
+- To deploy our smart contract successfully, we need the celo extention wallet which can be downloaded from [here](https://chrome.google.com/webstore/detail/celoextensionwallet/kkilomkmpmkbdnfelcpgckmpcaemjcdh?hl=en)
+
+- Create account
+
+- change network to Alfajores Test Network
+
+- Next, we need to fund our newly created wallet which can done using the celo alfojares faucet [Here](https://celo.org/developers/faucet)
+
+- Next we go to [remix](https://remix.ethereum.org/)
+
+- Now, click on the Plugin manager logo at the bottom left corner and search for celo.
+
+- Install the celo plugin and click on the celo logo which will show in the side tab after the plugin is installed.
+
+- Next connect your celo wallet, select the contract you want to deploy and finally click on deploy to deploy your contract.
+
+
+
 ## Frontend
 
 ## App.js
@@ -351,7 +391,7 @@ The `getProductLength` function returns the total number of products that have b
 
 First, let's set up our React app. Open your terminal and run the following command:
 
-```solidity
+```bash
 npx create-react-app skincare-product-store
 
 ```
@@ -360,7 +400,7 @@ This command will create a new directory named `skincare-product-store` with the
 
 Next, navigate to the app's directory:
 
-```solidity
+```bash
 cd skincare-product-store
 
 ```
@@ -369,7 +409,7 @@ cd skincare-product-store
 
 In this step, we'll install the necessary dependencies for our app. Run the following commands in your terminal:
 
-```solidity
+```bash
 npm install web3 @celo/contractkit bignumber.js
 
 ```
@@ -388,7 +428,7 @@ In the `src` directory, create a new directory named `components`. Inside the `c
 
 - ProductCard.js
 
-```solidity
+```javascript
 import React from "react";
 
 const ProductCard = ({
@@ -422,7 +462,7 @@ The `ProductCard` component represents a card displaying information about a ski
 
 - Carousel.js
 
-```solidity
+```javascript
 import React from "react";
 
 const Carousel = () => {
@@ -441,7 +481,7 @@ The `Carousel` component represents a slideshow of skincare product images. We'l
 
 - Form.js
 
-```solidity
+```javascript
 import React, { useState } from "react";
 
 const Form = ({ addProduct }) => {
@@ -541,7 +581,7 @@ The `Form` component displays a form for adding a new skincare product. It conta
 
 In the `src` directory, open the `App.js` file and replace its contents with the following code:
 
-```solidity
+```javascript
 import React, { useState, useEffect, useCallback } from "react";
 import Web3 from "web3";
 import { newKitFromWeb3 } from "@celo/contractkit";
@@ -554,7 +594,7 @@ import Form from "./components/Form";
 
 const ERC20_DECIMALS = 18;
 const contractAddress = "0xC628cAd55cD31650014259C7B811A6B2483a8De6";
-const cUSDContractAddress = "0x874069Fa1Eb16D
+const cUSDContractAddress = "0x874069fa1eb16d44d622f2e0ca25eea172369bc1"
 
 ```
 
@@ -562,7 +602,7 @@ const cUSDContractAddress = "0x874069Fa1Eb16D
 
 **Importing React**
 
-```solidity
+```javascript
 import React from "react";
 
 ```
@@ -570,7 +610,7 @@ This line imports the React library, which is necessary for creating React compo
 
 **Define the Carousel Component**
 
-```solidity
+```javascript
 function Carousel() {
   return (
     // JSX code representing the Carousel component
@@ -583,7 +623,7 @@ The code defines a functional component called `Carousel`. Functional components
 
 **Define theJSX Structure of the Carousel Component**
 
-```solidity
+```javascript
 <div className="container containercom">
   {/* ... */}
 </div>
@@ -594,7 +634,7 @@ The Carousel component consists of a `<div>` element with the classes "container
 
 **Create the Carousel Header**
 
-```solidity
+```javascript
 <div className="row">
   <div className="col-6">
     <h3 className="mb-3 text-secondary">Just For You</h3>
@@ -610,7 +650,7 @@ Inside the main container, there is a `<div>` element with the class "row". It c
 
 **Create Carousel Navigation Buttons**
 
-```solidity
+```javascript
 <div className="col-6 text-right">
   <a
     className="btn btn-secondary mb-3 mr-1"
@@ -636,7 +676,7 @@ In the second column of the header, there are two navigation buttons created as 
 
 **Create the carousel Content**
 
-```solidity
+```javascript
 <div className="col-12">
   <div id="carouselExampleIndicators2" className="carousel slide" data-ride="carousel">
     <div className="carousel-inner">
@@ -651,7 +691,7 @@ Inside the main container, there is another `<div>` element with the class "col-
 
 **Create Carousel Items**
 
-```solidity
+```javascript
 <div className="carousel-item active">
   <div className="row">
     {/* ... */}
@@ -674,7 +714,7 @@ Inside the carousel's inner container, there are multiple carousel items defined
 
 **Create Cards within Carousel Items**
 
-```solidity
+```javascript
 <div className="col-md-4 mb-3">
   <div className="card card-size">
     <img className="img-fluid card-img" alt="100%x280" />
@@ -702,7 +742,7 @@ The same structure as in Step 8 is repeated for other products within different 
 
 **Complete the Component**
 
-```solidity
+```javascript
 return (
   <div className="container containercom">
     <div className="row">
@@ -729,7 +769,7 @@ Finally, the complete JSX structure of the `Carousel` component is returned. It 
 
 **Export the Carousel Component**
 
-```solidity
+```javascript
 export default Carousel;
 
 ```
@@ -740,7 +780,7 @@ The `Carousel` component is exported as the default export, making it available 
 
 **Import React and useState**
 
-```solidity
+```javascript
 import React, { useState } from "react";
 
 ```
@@ -749,7 +789,7 @@ The `React` object is imported from the "react" package, and the `useState` hook
 
 **Define the Form component**
 
-```solidity
+```javascript
 export default function Form({ addProduct }) {
   // Component code goes here
 }
@@ -760,7 +800,7 @@ The `Form` component is defined as a default export. It takes a prop called `add
 
 **Define state and handle Change function**
 
-```solidity
+```javascript
 const [editProfileFormData, setEditProfileFormDate] = useState({
   brand: "",
   image: "",
@@ -783,7 +823,7 @@ The `handleChange` function is defined to update the state values whenever the u
 
 **Define hand Submit function**
 
-```solidity
+```javascript
 function handSubmit(e) {
   e.preventDefault();
 
@@ -805,7 +845,7 @@ The `addProduct` function (passed as a prop) is called with the values from the 
 
 **Render the Form component**
 
-```solidity
+```javascript
 return (
   <div className="form" onSubmit={(e) => handSubmit(e)}>
     {/* Form JSX goes here */}
@@ -828,7 +868,7 @@ That's the breakdown of the provided code. The `Form` component can be used with
 
 **Assign unique IDs to input fields**
 
-```solidity
+```javascript
 <label htmlFor="inputName" className="col-4 col-form-label">
   Name
 </label>
@@ -850,7 +890,7 @@ Each input field in the form has a unique `id` attribute associated with the `la
 
 **Implement form submission**
 
-```solidity
+```javascript
 <form>
   {/* Form fields */}
   <div className="mb-3 row">
@@ -873,7 +913,7 @@ The last `<div>` contains the submit button, which triggers the form submission 
 
 **Handle form submission**
 
-```solidity
+```javascript
 <div className="form" onSubmit={(e) => handSubmit(e)}>
   {/* Form content */}
 </div>
@@ -884,7 +924,7 @@ The `onSubmit` event is attached to the outermost `<div>` wrapping the form cont
 
 **Export the Form component**
 
-```solidity
+```javascript
 export default function Form({ addProduct }) {
   // Component code
 }
@@ -899,7 +939,7 @@ That's the breakdown of the provided code. It demonstrates a basic form componen
 
 **Define the `handleChange` function**
 
-```solidity
+```javascript
 const handleChange = (e) => {
   const { name, value } = e.target;
   setEditProfileFormDate({ ...editProfileFormData, [name]: value });
@@ -915,7 +955,7 @@ The `setEditProfileFormDate` function is then called with the spread syntax (`..
 
 **Define the `handSubmit` function**
 
-```solidity
+```javascript
 function handSubmit(e) {
   e.preventDefault();
 
@@ -939,7 +979,7 @@ The `addProduct` function, passed as a prop to the `Form` component, is then cal
 
 **Render the form**
 
-```solidity
+```javascript
 return (
   <div className="form" onSubmit={(e) => handSubmit(e)}>
     <div className="container conti">
@@ -959,7 +999,7 @@ The form itself is wrapped in a `<form>` element, and the form fields and submit
 
 **Export the `Form` component**
 
-```solidity
+```javascript
 export default function Form({ addProduct }) {
   // Component code
 }
@@ -974,7 +1014,7 @@ To use this `Form` component in your application, you would import it and includ
 
 **Import React**
 
-```solidity
+```javascript
 import React from "react";
 
 ```
@@ -983,7 +1023,7 @@ We start by importing the `React` module, which is required to define and use Re
 
 **Define the ProductCard component**
 
-```solidity
+```javascript
 export default function ProductCard({
   orderProduct,
   id,
@@ -1003,7 +1043,7 @@ The `ProductCard` component is defined as a functional component using the `func
 
 **Render the product card**
 
-```solidity
+```javascript
 return (
   <div className="card m-3" style={{ width: " 350px" }} key={id}>
     {/* Product image */}
@@ -1018,7 +1058,7 @@ The `return` statement defines the JSX code to be rendered by the component. In 
 
 **Render the product image**
 
-```solidity
+```javascript
 <div className="image-div">
   <img src={image} className="card-img-top" alt="..." />
 </div>
@@ -1029,7 +1069,7 @@ Inside the `<div>` element, an `<img>` element is rendered with the `src` attrib
 
 **Render the product details**
 
-```solidity
+```javascript
 <div className="card-body">
   <h5 className="card-title d-flex">
     {/* Product brand and category */}
@@ -1051,7 +1091,7 @@ The delivery time and stock count are rendered as list items (`<li>`) within a `
 
 **Render the order button**
 
-```solidity
+```javascript
 <button className="btn btn-primary" onClick={() => orderProduct(id)}>
   Order
 </button>
@@ -1062,7 +1102,7 @@ A `<button>` element is rendered with the class name "btn btn-primary". When cli
 
 **Export the ProductCard component**
 
-```solidity
+```javascript
 export default ProductCard;
 
 ```
@@ -1073,7 +1113,7 @@ That's it! You have now created a reusable `ProductCard` component that can rend
 
 Here's an example of how you can use the `ProductCard` component in a parent component:
 
-```solidity
+```javascript
 import React from "react";
 import ProductCard from "./ProductCard";
 
@@ -1097,18 +1137,6 @@ In the example above, the `ProductList` component receives an array of `products
 
 By encapsulating the product card rendering logic in the `ProductCard` component, you can reuse it throughout your application, ensuring consistency and reducing code duplication.
 
-## Deployment
-
-To deploy our smart contract successfully, we need the celo extention wallet which can be downloaded from [here](https://chrome.google.com/webstore/detail/celoextensionwallet/kkilomkmpmkbdnfelcpgckmpcaemjcdh?hl=en)
-
-Next, we need to fund our newly created wallet which can done using the celo alfojares faucet [Here](https://celo.org/developers/faucet)
-
-Now, click on the plugin logo at the bottom left corner and search for celo plugin.
-
-Install the plugin and click on the celo logo which will show in the side tab after the plugin is installed.
-
-Next connect your celo wallet, select the contract you want to deploy and finally click on deploy to deploy your contract.
-
 ## Conclusion
 
 In this tutorial, we've explained the code for the SkincareProduct smart contract in detail. The contract allows users to add skincare products, retrieve product details, and order products using a custom token. It demonstrates various concepts such as structs, mappings, events, and interactions with external contracts.
@@ -1118,4 +1146,4 @@ In this tutorial, we've explained the code for the SkincareProduct smart contrac
 Here are some relevant links that would aid your learning further.
 
 - [Official Celo Docs](https://docs.celo.org/)
-- [Official Solidity Docs](https://docs.soliditylang.org/en/v0.8.17/)
+- [Official solidity Docs](https://docs.soliditylang.org/en/v0.8.17/)
