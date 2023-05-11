@@ -29,18 +29,22 @@ This is the complete code.
 ```solidity
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+/**
+ * @title SkincareProduct
+ * @dev A smart contract for managing skincare product sales
+ */
 contract SkincareProduct is Ownable {
     using SafeMath for uint256;
 
-    uint internal productsLength = 0;
+    uint256 private productsLength = 0;
 
-    address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
+    address private immutable cUsdTokenAddress;
 
     struct Product {
         address payable owner;
@@ -48,33 +52,74 @@ contract SkincareProduct is Ownable {
         string image;
         string category;
         string deliveredWithin;
-        uint numberOfStock;
-        uint amount;
-        uint sales;
+        uint256 numberOfStock;
+        uint256 amount;
+        uint256 sales;
     }
 
-    mapping (uint => Product) private products;
-    
-    event ProductAdded(uint productId);
-    event ProductRemoved(uint productId);
-    event ProductOrdered(address _from, uint productId);
-    event StockUpdated(uint productId, uint newStock);
+    mapping (uint256 => Product) private products;
 
-    modifier productExists(uint _index) {
-        require(_index < productsLength, "Product doesn't exist");
+    /**
+     * @dev Emitted when a new product is added
+     */
+    event ProductAdded(uint256 indexed productId);
+
+    /**
+     * @dev Emitted when a product is removed
+     */
+    event ProductRemoved(uint256 indexed productId);
+
+    /**
+     * @dev Emitted when a product is ordered
+     */
+    event ProductOrdered(address indexed buyer, uint256 indexed productId);
+
+    /**
+     * @dev Emitted when the stock of a product is updated
+     */
+    event StockUpdated(uint256 indexed productId, uint256 newStock);
+
+    /**
+     * @dev Modifier to check if a product exists
+     * @param _productId The ID of the product to check
+     */
+    modifier productExists(uint256 _productId) {
+        require(_productId < productsLength, "Product does not exist");
         _;
     }
 
+    /**
+     * @dev Constructor for the SkincareProduct contract
+     * @param _cUsdTokenAddress The address of the cUSD token contract
+     */
+    constructor(address _cUsdTokenAddress) {
+        require(_cUsdTokenAddress != address(0), "Invalid cUSD token address");
+        cUsdTokenAddress = _cUsdTokenAddress;
+    }
+
+    /**
+     * @dev Adds a new product
+     * @param _brand The brand of the product
+     * @param _image The image of the product
+     * @param _category The category of the product
+     * @param _deliveredWithin The expected delivery time of the product
+     * @param _numberOfStock The number of items in stock for the product
+     * @param _amount The price of the product
+     */
     function addProduct(
-        string calldata _brand,
-        string calldata _image,
-        string calldata _category,
-        string calldata _deliveredWithin,
-        uint _numberOfStock,
-        uint _amount
+        string memory _brand,
+        string memory _image,
+        string memory _category,
+        string memory _deliveredWithin,
+        uint256 _numberOfStock,
+        uint256 _amount
     ) public onlyOwner {
-        require(bytes(_brand).length > 0, "Empty brand");
-        // similar checks for other parameters
+        require(bytes(_brand).length > 0, "Brand cannot be empty");
+        require(bytes(_image).length > 0, "Image cannot be empty");
+        require(bytes(_category).length > 0, "Category cannot be empty");
+        require(bytes(_deliveredWithin).length > 0, "Delivered within cannot be empty");
+        require(_numberOfStock > 0, "Number of stock must be greater than zero");
+        require(_amount > 0, "Amount must be greater than zero");
 
         products[productsLength] = Product(
             payable(msg.sender),
@@ -86,66 +131,14 @@ contract SkincareProduct is Ownable {
             _amount,
             0
         );
+
         emit ProductAdded(productsLength);
         productsLength++;
     }
 
-    function removeProduct(uint _index) public onlyOwner productExists(_index) {
-        delete products[_index];
-        emit ProductRemoved(_index);
-    }
-
-    function updateStock(uint _index, uint _newStock) public onlyOwner productExists(_index) {
-        products[_index].numberOfStock = _newStock;
-        emit StockUpdated(_index, _newStock);
-    }
-
-    function getProduct(uint _index) public view productExists(_index) returns (
-        address payable,
-        string memory,
-        string memory,
-        string memory,
-        string memory,
-        uint,
-        uint,
-        uint
-    ) {
-        Product storage p = products[_index];
-        return (
-            p.owner,
-            p.brand,
-            p.image,
-            p.category,
-            p.deliveredWithin,
-            p.numberOfStock,
-            p.amount,
-            p.sales
-        );
-    }
-    function orderProduct(uint _index) public payable productExists(_index) {
-        Product storage currentProduct = products[_index];
-        require(currentProduct.numberOfStock > 0, "Not enough products in stock to fulfill this order");
-        require(currentProduct.owner != msg.sender, "You can't buy your own products");
-
-        currentProduct.numberOfStock = currentProduct.numberOfStock.sub(1);
-        currentProduct.sales = currentProduct.sales.add(1);
-
-        require(
-            IERC20(cUsdTokenAddress).transferFrom(
-                msg.sender,
-                currentProduct.owner,
-                currentProduct.amount
-            ),
-            "Transfer failed."
-        );
-        emit ProductOrdered(msg.sender, _index);
-    }
-
-    function getProductLength() public view returns (uint) {
-        return (productsLength);
-    }
-}
- 
+    /**
+     * @
+        
 ```
 
 ## Smart Contract Explanation?
