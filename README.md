@@ -1,70 +1,104 @@
 ---
-title: Skincare Movie Ticketing Smart Contract on the Celo Blockchain
-description: In this tutorial, you'll learn how to create a skincare product on Celo Blockchain
-authors:
-  - name: Johnson Abu
+Title: Smart Contract of Skincare Product on the Celo Blockchain
+Description: In this tutorial, you'll learn how to create a Skincare product on Celo Blockchain
+Authors:
+  - Name: Johnson Abu
 ---
 
-## Introduction
+## Table of Contents:
 
-In this tutorial, we will be explaining a Solidity smart contract called "SkincareProduct". The contract allows users to add skincare products and order them using a custom token called "cUSD". We'll go through each section of the code, explain its purpose, and provide additional information where necessary
-## Prerequisites
+- [Smart Contract of Skincare Product on the Celo Blockchain](#smart-contract-of-skincare-product-on-the-celo-blockchain)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Pre-requisites](#pre-requisites)
+  - [Requirements](#requirements)
+  - [Smart Contract](#smart-contract)
+    - [Explaination of Smart Contract](#explaination-of-smart-contract)
+  - [Deployment Of the Contract](#deployment-of-the-contract)
+  - [Frontend](#frontend)
+    - [App.js](#app.js)
+    - [Carousel.jsx](#Ccarousel.jsx) 
+    - [Form.jsx](#form.jsx) 
+    - [productCard.jsx](#productCard.jsx) 
+  - [Conclusion](#conclusion)
+  - [Further Steps](#further-steps)
 
-To follow along with this tutorial, you should have a basic understanding of Solidity and smart contracts.
+## Introduction:
 
-Also a basic understanding of web development, which should comprise of Javascript and React.
+In this tutorial, we will be explaining a Solidity Smart Contract called "Skincare Product". The contract allows users to add skincare products and order them using a custom token called "cUSD (Celo US Dollar)". We'll also go through each section of the code, explain its purpose and provide additional information.
 
-You should also have an environment set up to deploy and interact with:
+## Pre-requisites:
 
-- smart contracts, such as Remix
-- Node.js and npm installed on your machine
-- A Celo wallet or Celo-compatible wallet extension installed in your browser (e.g., Celo Extension Wallet)
+1. Understanding of [Solidity](https://docs.soliditylang.org/en/v0.8.20/) and [Smart Contracts](https://www.ibm.com/topics/smart-contracts#:~:text=Smart%20contracts%20are%20simply%20programs,intermediary's%20involvement%20or%20time%20loss.).
+2. Understanding of [Javascript](https://www.simplilearn.com/tutorials/javascript-tutorial/introduction-to-javascript) and [React](https://react-cn.github.io/react/downloads.html).
 
-## SmartContract
+## Requirements:
 
-Let's get started writing out our smart contract in Remix IDE
+Install the following tools on your computer:
 
-This is the complete code.
+- [Remix IDE](https://remix.ethereum.org/#lang=en&optimize=false&runs=200&evmVersion=null&version=soljson-v0.8.18+commit.87f61d96.js) 
+- [Node.js](https://nodejs.org/en/download) and [npm](https://www.npmjs.com/package/download)
+- [Celo Extension Wallet](https://chrome.google.com/webstore/detail/celoextensionwallet/kkilomkmpmkbdnfelcpgckmpcaemjcdh)
+
+## Smart Contract:
+
+Let's get started writing out our Smart Contract om Remix IDE.
+
+This is the complete code:
 
 ```solidity
 // SPDX-License-Identifier: MIT
 
+// Version of Solidity compiler to use
 pragma solidity >=0.7.0 <0.9.0;
 
+// Importing necessary contracts and libraries from OpenZeppelin
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+// Contract for a skincare product marketplace
 contract SkincareProduct is Ownable {
     using SafeMath for uint256;
 
-    uint internal productsLength = 0;
+    uint internal productsLength = 0;  // Count of products in the marketplace
 
-    address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
+    address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;  // Address of the cUSD token contract
 
+    // Struct representing a skincare product
     struct Product {
-        address payable owner;
-        string brand;
-        string image;
-        string category;
-        string deliveredWithin;
-        uint numberOfStock;
-        uint amount;
-        uint sales;
+        address payable owner;  // Address of the owner of the product
+        string brand;  // Brand name of the product
+        string image;  // URL of the image of the product
+        string category;  // Category of the product (e.g. "Moisturizer", "Serum")
+        string deliveredWithin;  // Expected delivery time for the product
+        uint numberOfStock;  // Number of units of the product in stock
+        uint amount;  // Price of the product
+        uint sales;  // Number of units of the product sold
     }
 
+    // Mapping of product IDs to products
     mapping (uint => Product) private products;
     
+    // Event emitted when a new product is added
     event ProductAdded(uint productId);
+    
+    // Event emitted when a product is removed
     event ProductRemoved(uint productId);
+    
+    // Event emitted when a product is ordered
     event ProductOrdered(address _from, uint productId);
+    
+    // Event emitted when a product's stock is updated
     event StockUpdated(uint productId, uint newStock);
 
+    // Modifier to check if a product exists in the marketplace
     modifier productExists(uint _index) {
         require(_index < productsLength, "Product doesn't exist");
         _;
     }
 
+    // Function to add a new product to the marketplace
     function addProduct(
         string calldata _brand,
         string calldata _image,
@@ -74,6 +108,7 @@ contract SkincareProduct is Ownable {
         uint _amount
     ) public onlyOwner {
         require(bytes(_brand).length > 0, "Empty brand");
+        require(_amount > 0, "Invalid amount");
         // similar checks for other parameters
 
         products[productsLength] = Product(
@@ -90,56 +125,40 @@ contract SkincareProduct is Ownable {
         productsLength++;
     }
 
-    function removeProduct(uint _index) public onlyOwner productExists(_index) {
+    // Function to remove a product from the marketplace
+    function removeProduct(uint _index) public onlyOwner {
+        require(_index < productsLength, "Product doesn't exist");
         delete products[_index];
         emit ProductRemoved(_index);
     }
 
-    function updateStock(uint _index, uint _newStock) public onlyOwner productExists(_index) {
+    // Function to update the stock of a product in the marketplace
+    function updateStock(uint _index, uint _newStock) public onlyOwner {
+        require(_index < productsLength, "Product doesn't exist");
         products[_index].numberOfStock = _newStock;
         emit StockUpdated(_index, _newStock);
     }
 
-    function getProduct(uint _index) public view productExists(_index) returns (
-        address payable,
-        string memory,
-        string memory,
-        string memory,
-        string memory,
-        uint,
-        uint,
-        uint
-    ) {
-        Product storage p = products[_index];
-        return (
-            p.owner,
-            p.brand,
-            p.image,
-            p.category,
-            p.deliveredWithin,
-            p.numberOfStock,
-            p.amount,
-            p.sales
-        );
-    }
-    function orderProduct(uint _index) public payable productExists(_index) {
-        Product storage currentProduct = products[_index];
-        require(currentProduct.numberOfStock > 0, "Not enough products in stock to fulfill this order");
-        require(currentProduct.owner != msg.sender, "You can't buy your own products");
+    // Function to order a product from the marketplace
+function orderProduct(uint _index) public payable productExists(_index) {
+    Product storage currentProduct = products[_index];
+    require(currentProduct.numberOfStock > 0, "Not enough products in stock to fulfill this order");
+    require(currentProduct.owner != msg.sender, "You can't buy your own products");
+    require(msg.value >= currentProduct.amount, "Insufficient funds");
 
-        currentProduct.numberOfStock = currentProduct.numberOfStock.sub(1);
-        currentProduct.sales = currentProduct.sales.add(1);
-
-        require(
-            IERC20(cUsdTokenAddress).transferFrom(
-                msg.sender,
-                currentProduct.owner,
-                currentProduct.amount
-            ),
-            "Transfer failed."
-        );
-        emit ProductOrdered(msg.sender, _index);
-    }
+    currentProduct.numberOfStock = currentProduct.numberOfStock.sub(1);
+    currentProduct.sales = currentProduct.sales.add(1);
+    
+    require(
+        IERC20(cUsdTokenAddress).transferFrom(
+            msg.sender,
+            currentProduct.owner,
+            currentProduct.amount
+        ),
+        "Transfer failed."
+    );
+    emit ProductOrdered(msg.sender, _index);
+}
 
     function getProductLength() public view returns (uint) {
         return (productsLength);
@@ -148,20 +167,22 @@ contract SkincareProduct is Ownable {
  
 ```
 
-## Smart Contract Explanation?
+## Explanation of Smart Contract:
 
 Let's explain how the contract works!
 
-**SPDX License Identifier, Solidity Version and Interface Definition**
+**SPDX License Identifier, Solidity Version and Interface Definition:**
 
 The `SPDX-License-Identifier` is a special comment that identifies the type of license under which the smart contract is released. In this case, the contract is licensed under the MIT License.
 
 ```solidity
 // SPDX-License-Identifier: MIT
+// This interface defines the functions that need to be implemented by ERC20 token contracts
+// that can be used by other contracts
 pragma solidity >=0.7.0 <0.9.0;
 
 interface IERC20Token {
-    // Interface functions
+// Interface functions
 }
 
 ```
@@ -170,7 +191,7 @@ The `pragma` statement specifies the version of Solidity that the contract is co
 
 The `interface` declaration defines the interface for an ERC20 token contract. It specifies the required functions and events that a compliant token contract must implement. This interface will be used later in the code.
 
-**Contract Declaration**
+**Contract Declaration:**
 
 ```solidity
 contract SkincareProduct {
@@ -180,22 +201,24 @@ contract SkincareProduct {
 
 ```
 
-The `contract` declaration defines the SkincareProduct contract. It encapsulates all the variables, mappings, functions, and events defined within it.
+The `contract` declaration defines the Skincare Product contract. It encapsulates all the variables, mappings, functions and events defined within it.
 
 
-**State Variables**
+**State Variables:**
 
 ```solidity
+// This variable keeps track of the number of products added to the contract
 uint internal productsLength = 0;
+
+// This is the address of the cUSD token used for payments in the contract
 address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
 
 ```
 
 - `productsLength` is an internal unsigned integer variable that keeps track of the number of products added to the contract.
-
 - `cUsdTokenAddress` is an internal address variable that stores the address of the cUSD token contract.
 
-**Struct Definition**
+**Struct Definition:**
 
 ```solidity
 struct Product {
@@ -213,27 +236,25 @@ struct Product {
 
 The `Product` struct defines the structure of a skincare product. It contains the following fields:
 
-- `owner` - the address of the product owner (payable).
-- `brand` - a string representing the brand of the product.
-- `image` - a string representing the image of the product.
-- `category` - a string representing the category of the product.
-- `deliveredWithin` - a string representing the delivery timeline of the product.
-- `numberOfStock` - an unsigned integer representing the available stock of the product.
-- `amount` - an unsigned integer representing the price of the product.
-- `sales` - an unsigned integer representing the number of sales made for the product.
+- `owner` - address of the product owner (payable).
+- `brand` - string representing the brand of the product.
+- `image` - string representing the image of the product.
+- `category` - string representing the category of the product.
+- `deliveredWithin` - string representing the delivery timeline of the product.
+- `numberOfStock` - unsigned integer representing the available stock of the product.
+- `amount` - unsigned integer representing the price of the product.
+- `sales` - unsigned integer representing the number of sales made for the product.
 
-**Mapping**
-
-We will implement a function to retrieve the details of a movie ticket.
+**Mapping:**
 
 ```solidity
 mapping (uint => Product) private products;
 
 ```
 
-The `products` mapping maps a unique identifier (uint) to a Product struct. It is used to store and retrieve products based on their identifier.
+The `products` mapping maps a unique identifier (uint) to a `Product` struct. It is used to store and retrieve products based on their identifier.
 
-**Event**
+**Event:**
 
 ```solidity
 event ProductOrdered(
@@ -243,31 +264,34 @@ event ProductOrdered(
 
 ```
 
-The `productOrdered` event is emitted when a product is ordered. It logs the address of the buyer (`_from`) and the product identifier
+The `productOrdered` event is emitted when a product is ordered. It logs the address of the buyer (`_from`) and the product identifier.
 
-**Adding a Product**
+**Adding a Product:**
 
 ```solidity
+// Define a function called addProduct that can be called by anyone
 function addProduct(
-    string calldata _brand,
-    string calldata _image,
-    string calldata _category,
-    string calldata _deliveredWithin,
-    uint _numberOfStock,
-    uint _amount
+    // The function takes in several input parameters:
+    string calldata _brand, // The brand of the product being added
+    string calldata _image, // The image associated with the product
+    string calldata _category, // The category that the product belongs to
+    string calldata _deliveredWithin, // The estimated delivery time for the product
+    uint _numberOfStock, // The number of units of the product that are available for sale
+    uint _amount // The price of the product
 ) public {
-    // Input validation and requirements
+    // Perform input validation and requirements (not shown in the code)
     // Add the product to the products mapping
     products[productsLength] = Product(
-        payable(msg.sender),
-        _brand,
-        _image,
-        _category,
-        _deliveredWithin,
-        _numberOfStock,
-        _amount,
-        0
+        payable(msg.sender), // The address of the seller (i.e., the person who added the product)
+        _brand, // The brand of the product being added
+        _image, // The image associated with the product
+        _category, // The category that the product belongs to
+        _deliveredWithin, // The estimated delivery time for the product
+        _numberOfStock, // The number of units of the product that are available for sale
+        _amount, // The price of the product
+        0 // The number of units of the product that have been sold (initialized to zero)
     );
+    // Increment the productsLength variable, which keeps track of the number of products in the mapping
     productsLength++;
 }
 
@@ -282,21 +306,35 @@ The function performs the following steps:
 - Assigns the product to the `products` mapping using the `productsLength` as the identifier.
 - Increments the `productsLength` variable to maintain a unique identifier for each product.
 
-**Getting a Product**
+**Getting a Product:**
 
 ```solidity
+// Define a function called getProduct that can be called by anyone
 function getProduct(uint _index) public view returns (
-    address payable,
-    string memory,
-    string memory,
-    string memory,
-    string memory,
-    uint,
-    uint,
-    uint
+    address payable, // The address of the seller (i.e., the person who added the product)
+    string memory, // The brand of the product
+    string memory, // The image associated with the product
+    string memory, // The category that the product belongs to
+    string memory, // The estimated delivery time for the product
+    uint, // The number of units of the product that are available for sale
+    uint, // The price of the product
+    uint // The number of units of the product that have been sold
 ) {
     // Retrieve the product from the products mapping based on the given index
+    // The mapping associates each index with a Product struct, which contains all the details of the product
+    Product memory product = products[_index];
+    
     // Return the product details
+    return (
+        product.seller, // The address of the seller (i.e., the person who added the product)
+        product.brand, // The brand of the product
+        product.image, // The image associated with the product
+        product.category, // The category that the product belongs to
+        product.deliveredWithin, // The estimated delivery time for the product
+        product.numberOfStock, // The number of units of the product that are available for sale
+        product.amount, // The price of the product
+        product.numberOfSold // The number of units of the product that have been sold
+    );
 }
 
 ```
@@ -306,10 +344,9 @@ The `getProduct` function retrieves the details of a specific product based on i
 The function performs the following steps:
 
 - Retrieves the product from the `products` mapping using the provided `_index`.
-- Returns the product details as a tuple containing the owner's address, brand, image, category, delivery timeline, number of stock, price, and number of sales.
+- Returns the product details as a tuple containing the owner's address, brand, image, category, delivery timeline, number of stock, price and number of sales.
 
-
-**Ordering a Product**
+**Ordering a Product:**
 
 ```solidity
 function orderProduct(uint _index) public payable {
@@ -332,7 +369,7 @@ The function performs the following steps:
 - Transfers the product price in cUSD from the buyer to the product owner using the `transferFrom` function of the cUSD token contract.
 - Emits the `ProductOrdered` event to indicate a successful order.
 
-**Getting Product Length**
+**Getting Product Length:**
 
 ```solidity
 function getProductLength() public view returns (uint) {
@@ -343,13 +380,13 @@ function getProductLength() public view returns (uint) {
 
 The `getProductLength` function returns the total number of products that have been added to the contract.
 
-## Frontend
+## Frontend:
 
-## App.js
+## App.js:
 
-**Setting up the React App**
+**Setting up the React App:**
 
-First, let's set up our React app. Open your terminal and run the following command:
+First, let's set up our "React app". Open your terminal and run the following command:
 
 ```solidity
 npx create-react-app skincare-product-store
@@ -365,7 +402,7 @@ cd skincare-product-store
 
 ```
 
-**Installing Dependencies**
+**Installing Dependencies:**
 
 In this step, we'll install the necessary dependencies for our app. Run the following commands in your terminal:
 
@@ -374,33 +411,37 @@ npm install web3 @celo/contractkit bignumber.js
 
 ```
 
-These packages will help us interact with the Celo blockchain and handle BigNumber calculations.
+These packages will help us interact with the Celo blockchain and handle `BigNumber` calculations.
 
-**Creating the Contract ABI Files**
+**Creating the Contract ABI Files:**
 
 In this tutorial, we'll assume that you already have the compiled contract files (`Skincare.sol` and `IERC.sol`) and their corresponding ABIs. If you don't have the ABI files, you'll need to compile the Solidity contracts and generate the ABIs using the appropriate compiler.
 
 Place the `Skincare.abi.json` and `IERC.abi.json` files in the `src/contracts` directory of your React app.
 
-**Creating the Components**
+**Creating the Components:**
 
 In the `src` directory, create a new directory named `components`. Inside the `components` directory, create three new files: `ProductCard.js`, `Carousel.js`, and `Form.js`.
 
-- ProductCard.js
+- ProductCard.js:
 
 ```solidity
+// Import the React library
 import React from "react";
 
+// Define a functional component called ProductCard
+// The component takes in several props (i.e., properties) that are used to display the details of a product
 const ProductCard = ({
-  id,
-  brand,
-  image,
-  category,
-  deliveredWithin,
-  numberOfStock,
-  amount,
-  orderProduct,
+  id, // The unique identifier of the product
+  brand, // The brand of the product
+  image, // The URL of the image associated with the product
+  category, // The category that the product belongs to
+  deliveredWithin, // The estimated delivery time for the product
+  numberOfStock, // The number of units of the product that are available for sale
+  amount, // The price of the product
+  orderProduct, // A function that is called when the "Order" button is clicked
 }) => {
+  // The component returns some JSX (i.e., a combination of HTML and JavaScript) that displays the details of the product
   return (
     <div className="product-card">
       <img src={image} alt={brand} />
@@ -414,18 +455,22 @@ const ProductCard = ({
   );
 };
 
+// Export the ProductCard component so that it can be used in other parts of the codebase
 export default ProductCard;
 
 ```
 
 The `ProductCard` component represents a card displaying information about a skincare product. It receives the product details as props and renders them along with an "Order" button. When the button is clicked, it calls the `orderProduct` function.
 
-- Carousel.js
+- Carousel.js:
 
 ```solidity
+// Import the React library
 import React from "react";
 
+// Define a functional component called Carousel
 const Carousel = () => {
+  // The component returns some JSX (i.e., a combination of HTML and JavaScript) that will render a carousel
   return (
     <div className="carousel">
       {/* Carousel implementation */}
@@ -433,35 +478,45 @@ const Carousel = () => {
   );
 };
 
+// Export the Carousel component so that it can be used in other parts of the codebase
 export default Carousel;
 
 ```
 
 The `Carousel` component represents a slideshow of skincare product images. We'll implement the carousel functionality later.
 
-- Form.js
+- Form.js:
 
 ```solidity
 import React, { useState } from "react";
 
 const Form = ({ addProduct }) => {
-  const [brand, setBrand] = useState("");
-  const [image, setImage] = useState("");
-  const [category, setCategory] = useState("");
-  const [deliveredWithin, setDeliveredWithin] = useState("");
-  const [numberOfStock, setNumberOfStock] = useState("");
-  const [amount, setAmount] = useState("");
+  const [formData, setFormData] = useState({
+    brand: "",
+    image: "",
+    category: "",
+    deliveredWithin: "",
+    numberOfStock: "",
+    amount: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    addProduct(brand, image, category, deliveredWithin, numberOfStock, amount);
+    addProduct(formData);
     // Reset form fields
-    setBrand("");
-    setImage("");
-    setCategory("");
-    setDeliveredWithin("");
-    setNumberOfStock("");
-    setAmount("");
+    setFormData({
+      brand: "",
+      image: "",
+      category: "",
+      deliveredWithin: "",
+      numberOfStock: "",
+      amount: "",
+    });
   };
 
   return (
@@ -471,8 +526,9 @@ const Form = ({ addProduct }) => {
         <input
           type="text"
           id="brand"
-          value={brand}
-          onChange={(e) => setBrand(e.target.value)}
+          name="brand"
+          value={formData.brand}
+          onChange={handleChange}
           required
         />
       </div>
@@ -481,8 +537,9 @@ const Form = ({ addProduct }) => {
         <input
           type="text"
           id="image"
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
+          name="image"
+          value={formData.image}
+          onChange={handleChange}
           required
         />
       </div>
@@ -491,8 +548,9 @@ const Form = ({ addProduct }) => {
         <input
           type="text"
           id="category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          name="category"
+          value={formData.category}
+          onChange={handleChange}
           required
         />
       </div>
@@ -501,8 +559,9 @@ const Form = ({ addProduct }) => {
         <input
           type="text"
           id="deliveredWithin"
-          value={deliveredWithin}
-          onChange={(e) => setDeliveredWithin(e.target.value)}
+          name="deliveredWithin"
+          value={formData.deliveredWithin}
+          onChange={handleChange}
           required
         />
       </div>
@@ -511,8 +570,9 @@ const Form = ({ addProduct }) => {
         <input
           type="number"
           id="numberOfStock"
-          value={numberOfStock}
-          onChange={(e) => setNumberOfStock(e.target.value)}
+          name="numberOfStock"
+          value={formData.numberOfStock}
+          onChange={handleChange}
           required
         />
       </div>
@@ -521,8 +581,9 @@ const Form = ({ addProduct }) => {
         <input
           type="number"
           id="amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          name="amount"
+          value={formData.amount}
+          onChange={handleChange}
           required
         />
       </div>
@@ -533,11 +594,12 @@ const Form = ({ addProduct }) => {
 
 export default Form;
 
+
 ```
 
-The `Form` component displays a form for adding a new skincare product. It contains input fields for the brand, image URL, category, delivery time, stock quantity, and price. When the form is submitted, it calls the `addProduct` function and resets the form fields.
+The `Form` component displays a form for adding a new skincare product. It contains input fields for the brand, image URL, category, delivery time, stock quantity and price. When the form is submitted, it calls the `addProduct` function and resets the form fields.
 
-**Writing the App Component**
+**Writing the App Component:**
 
 In the `src` directory, open the `App.js` file and replace its contents with the following code:
 
@@ -558,9 +620,9 @@ const cUSDContractAddress = "0x874069Fa1Eb16D
 
 ```
 
-## Carousel.jsx
+## Carousel.jsx:
 
-**Importing React**
+**Importing React:**
 
 ```solidity
 import React from "react";
@@ -568,7 +630,7 @@ import React from "react";
 ```
 This line imports the React library, which is necessary for creating React components.
 
-**Define the Carousel Component**
+**Define the Carousel Component:**
 
 ```solidity
 function Carousel() {
@@ -581,7 +643,7 @@ function Carousel() {
 
 The code defines a functional component called `Carousel`. Functional components are a way to define reusable UI components in React. The `Carousel` component returns JSX code that represents the structure and content of the component.
 
-**Define theJSX Structure of the Carousel Component**
+**Define theJSX Structure of the Carousel Component:**
 
 ```solidity
 <div className="container containercom">
@@ -592,7 +654,7 @@ The code defines a functional component called `Carousel`. Functional components
 
 The Carousel component consists of a `<div>` element with the classes "container" and "containercom". This `<div>` acts as the main container for the carousel.
 
-**Create the Carousel Header**
+**Create the Carousel Header:**
 
 ```solidity
 <div className="row">
@@ -608,7 +670,7 @@ The Carousel component consists of a `<div>` element with the classes "container
 
 Inside the main container, there is a `<div>` element with the class "row". It contains two columns created using Bootstrap's grid system (`col-6 class`). In the first column, there is an `<h3>` element with the text "Just For You" and some additional classes for styling.
 
-**Create Carousel Navigation Buttons**
+**Create Carousel Navigation Buttons:**
 
 ```solidity
 <div className="col-6 text-right">
@@ -634,7 +696,7 @@ Inside the main container, there is a `<div>` element with the class "row". It c
 
 In the second column of the header, there are two navigation buttons created as `<a>` elements. They have Bootstrap classes for styling (`btn, btn-secondary`) and Font Awesome icons (`fa fa-arrow-left` and `fa fa-arrow-right`). These buttons are used to navigate to the previous and next carousel items.
 
-**Create the carousel Content**
+**Create the carousel Content:**
 
 ```solidity
 <div className="col-12">
@@ -649,7 +711,7 @@ In the second column of the header, there are two navigation buttons created as 
 
 Inside the main container, there is another `<div>` element with the class "col-12". It contains the carousel structure defined by the Bootstrap carousel component. The carousel items will be added inside the `<div>` with the class "carousel-inner".
 
-**Create Carousel Items**
+**Create Carousel Items:**
 
 ```solidity
 <div className="carousel-item active">
@@ -672,7 +734,7 @@ Inside the main container, there is another `<div>` element with the class "col-
 
 Inside the carousel's inner container, there are multiple carousel items defined as `<div>` elements with the class "carousel-item". Each carousel item contains a `<div>` with the class "row".
 
-**Create Cards within Carousel Items**
+**Create Cards within Carousel Items:**
 
 ```solidity
 <div className="col-md-4 mb-3">
@@ -696,11 +758,11 @@ Inside the card, there is an `<img>` element with the class "img-fluid card-img"
 
 The card's body contains a `<h4>` element with the class "card-title" for the product name, a `<p>` element with the class "card-text" for the product description, and an `<a>` element with the classes "btn btn-primary" for the "Order Product" button.
 
-**Repeat the Steps for Other Products**
+**Repeat the Steps for Other Products:**
 
 The same structure as in Step 8 is repeated for other products within different carousel items. Each product card has a unique image, name, description, and "Order Product" button.
 
-**Complete the Component**
+**Complete the Component:**
 
 ```solidity
 return (
@@ -727,7 +789,7 @@ return (
 
 Finally, the complete JSX structure of the `Carousel` component is returned. It includes the main container, header, navigation buttons, and the carousel structure with its inner container and items.
 
-**Export the Carousel Component**
+**Export the Carousel Component:**
 
 ```solidity
 export default Carousel;
@@ -736,9 +798,9 @@ export default Carousel;
 
 The `Carousel` component is exported as the default export, making it available for use in other files.
 
-## Form.jsx
+## Form.jsx:
 
-**Import React and useState**
+**Import React and useState:**
 
 ```solidity
 import React, { useState } from "react";
@@ -747,7 +809,7 @@ import React, { useState } from "react";
 
 The `React` object is imported from the "react" package, and the `useState` hook is imported from the "react" package as well. This hook allows us to add state to functional components.
 
-**Define the Form component**
+**Define the Form component:**
 
 ```solidity
 export default function Form({ addProduct }) {
@@ -758,7 +820,7 @@ export default function Form({ addProduct }) {
 
 The `Form` component is defined as a default export. It takes a prop called `addProduct` which is a function that will be called when the form is submitted.
 
-**Define state and handle Change function**
+**Define state and handle Change function:**
 
 ```solidity
 const [editProfileFormData, setEditProfileFormDate] = useState({
@@ -781,7 +843,7 @@ The `useState` hook is used to define the `editProfileFormData` state object. It
 
 The `handleChange` function is defined to update the state values whenever the user types into the input fields. It uses object destructuring to extract the `name` and `value` from the event target (input field) and then calls `setEditProfileFormDate` to update the corresponding property in the state object.
 
-**Define hand Submit function**
+**Define hand Submit function:**
 
 ```solidity
 function handSubmit(e) {
@@ -803,7 +865,7 @@ The `handSubmit` function is called when the form is submitted. It prevents the 
 
 The `addProduct` function (passed as a prop) is called with the values from the `editProfileFormData` state object as arguments. This allows the parent component to handle the submission and process the product data.
 
-**Render the Form component**
+**Render the Form component:**
 
 ```solidity
 return (
@@ -816,7 +878,7 @@ return (
 
 The component returns JSX representing the form. It wraps the form content in a `<div>` with the class "form" and sets the `onSubmit` event to call the `handSubmit` function.
 
-**Render the form content**
+**Render the form content:**
 
 The JSX code within the `return` statement represents the form content. It includes a container `<div>`, a `<form>` element, and various form fields for the product information.
 
@@ -826,7 +888,7 @@ The last `<div>` contains a submit button that triggers the form submission.
 
 That's the breakdown of the provided code. The `Form` component can be used within a React application to render a form for adding a product, and the entered data can be captured and processed using the `addProduct` prop function.
 
-**Assign unique IDs to input fields**
+**Assign unique IDs to input fields:**
 
 ```solidity
 <label htmlFor="inputName" className="col-4 col-form-label">
@@ -848,7 +910,7 @@ That's the breakdown of the provided code. The `Form` component can be used with
 
 Each input field in the form has a unique `id` attribute associated with the `label` element. This is done to improve accessibility. The `htmlFor` attribute of the `label` element references the corresponding `id` of the input field.
 
-**Implement form submission**
+**Implement form submission:**
 
 ```solidity
 <form>
@@ -871,7 +933,7 @@ The form is wrapped within a `<form>` element. Inside the form, there are severa
 
 The last `<div>` contains the submit button, which triggers the form submission when clicked. The button has a type of "submit" and a class of "btn btn-primary long-btn btn-secondary" for styling purposes.
 
-**Handle form submission**
+**Handle form submission:**
 
 ```solidity
 <div className="form" onSubmit={(e) => handSubmit(e)}>
@@ -882,7 +944,7 @@ The last `<div>` contains the submit button, which triggers the form submission 
 
 The `onSubmit` event is attached to the outermost `<div>` wrapping the form content. The `handSubmit` function is passed as the event handler and will be called when the form is submitted.
 
-**Export the Form component**
+**Export the Form component:**
 
 ```solidity
 export default function Form({ addProduct }) {
@@ -897,7 +959,7 @@ To use this component in your application, you would import it and pass the `add
 
 That's the breakdown of the provided code. It demonstrates a basic form component in React that captures user input for a product and allows the data to be submitted.
 
-**Define the `handleChange` function**
+**Define the `handleChange` function:**
 
 ```solidity
 const handleChange = (e) => {
@@ -909,11 +971,11 @@ const handleChange = (e) => {
 
 The `handleChange` function is called whenever the value of an input field changes. It takes an event object `e` as an argument and extracts the `name` and `value` properties from the target input element.
 
-Using destructuring assignment, the `name` and `value` are extracted from `e.target`. The `name` corresponds to the `name` attribute of the input field, and the `value` is the new value entered by the user.
+Using destructuring assignment, the `name` and `value` are extracted from `e.target`. The `name` corresponds to the `name` attribute of the input field and the `value` is the new value entered by the user.
 
 The `setEditProfileFormDate` function is then called with the spread syntax (`...editProfileFormData`) to create a copy of the current `editProfileFormData` state object. The `[name]: value` syntax is used to update the specific field identified by `name` with the new `value`.
 
-**Define the `handSubmit` function**
+**Define the `handSubmit` function:**
 
 ```solidity
 function handSubmit(e) {
@@ -937,7 +999,7 @@ The first line `e.preventDefault()` prevents the default form submission behavio
 
 The `addProduct` function, passed as a prop to the `Form` component, is then called with the values from the `editProfileFormData` state object as arguments. These values represent the input fields' values entered by the user.
 
-**Render the form**
+**Render the form:**
 
 ```solidity
 return (
@@ -957,7 +1019,7 @@ In the `return` statement, the form is rendered inside a containing `<div>` with
 
 The form itself is wrapped in a `<form>` element, and the form fields and submit button are rendered inside it.
 
-**Export the `Form` component**
+**Export the `Form` component:**
 
 ```solidity
 export default function Form({ addProduct }) {
@@ -970,9 +1032,9 @@ Finally, the `Form` component is exported as the default export of the module, a
 
 To use this `Form` component in your application, you would import it and include it in your parent component, passing the `addProduct` function as a prop. The `addProduct` function should handle the logic for adding the product to your data store or performing any other necessary actions.
 
-## productCard.jsx
+## productCard.jsx:
 
-**Import React**
+**Import React:**
 
 ```solidity
 import React from "react";
@@ -981,7 +1043,7 @@ import React from "react";
 
 We start by importing the `React` module, which is required to define and use React components.
 
-**Define the ProductCard component**
+**Define the ProductCard component:**
 
 ```solidity
 export default function ProductCard({
@@ -1001,7 +1063,7 @@ export default function ProductCard({
 
 The `ProductCard` component is defined as a functional component using the `function` syntax. It takes an object as its argument, which contains the props passed to the component. These props represent the data for a specific product.
 
-**Render the product card**
+**Render the product card:**
 
 ```solidity
 return (
@@ -1016,7 +1078,7 @@ return (
 
 The `return` statement defines the JSX code to be rendered by the component. In this case, a `<div>` element with the class name "card" is created. It has some styling applied to set its width to 350 pixels. The `key` attribute is set to the `id` prop value to help React efficiently update and re-render the component when needed.
 
-**Render the product image**
+**Render the product image:**
 
 ```solidity
 <div className="image-div">
@@ -1027,7 +1089,7 @@ The `return` statement defines the JSX code to be rendered by the component. In 
 
 Inside the `<div>` element, an `<img>` element is rendered with the `src` attribute set to the value of the `image` prop. The `className` is set to "card-img-top" to apply appropriate styling, and the `alt` attribute is set to "..." to provide alternative text for the image.
 
-**Render the product details**
+**Render the product details:**
 
 ```solidity
 <div className="card-body">
@@ -1049,7 +1111,7 @@ The product price is rendered inside a `<div>` element with the class name "pric
 
 The delivery time and stock count are rendered as list items (`<li>`) within a `<ul>` element with the class name "nav flex-column". Each detail is wrapped in a `<b>` element for bold styling.
 
-**Render the order button**
+**Render the order button:**
 
 ```solidity
 <button className="btn btn-primary" onClick={() => orderProduct(id)}>
@@ -1060,7 +1122,7 @@ The delivery time and stock count are rendered as list items (`<li>`) within a `
 
 A `<button>` element is rendered with the class name "btn btn-primary". When clicked, it triggers the `onClick` event and calls the `orderProduct` function passed as a prop, passing the `id` prop value as an argument.
 
-**Export the ProductCard component**
+**Export the ProductCard component:**
 
 ```solidity
 export default ProductCard;
@@ -1097,9 +1159,9 @@ In the example above, the `ProductList` component receives an array of `products
 
 By encapsulating the product card rendering logic in the `ProductCard` component, you can reuse it throughout your application, ensuring consistency and reducing code duplication.
 
-## Deployment
+## Deployment:
 
-To deploy our smart contract successfully, we need the celo extention wallet which can be downloaded from [here](https://chrome.google.com/webstore/detail/celoextensionwallet/kkilomkmpmkbdnfelcpgckmpcaemjcdh?hl=en)
+To deploy our Smart Contract successfully, we need the celo extention wallet which can be downloaded from [here](https://chrome.google.com/webstore/detail/celoextensionwallet/kkilomkmpmkbdnfelcpgckmpcaemjcdh?hl=en)
 
 Next, we need to fund our newly created wallet which can done using the celo alfojares faucet [Here](https://celo.org/developers/faucet)
 
@@ -1109,11 +1171,13 @@ Install the plugin and click on the celo logo which will show in the side tab af
 
 Next connect your celo wallet, select the contract you want to deploy and finally click on deploy to deploy your contract.
 
-## Conclusion
+## Conclusion:
 
-In this tutorial, we've explained the code for the SkincareProduct smart contract in detail. The contract allows users to add skincare products, retrieve product details, and order products using a custom token. It demonstrates various concepts such as structs, mappings, events, and interactions with external contracts.
+Therefore, in this tutorial we've explained the code for the Skincare Product Smart Contract in detail. The contract allows users to add skincare products, retrieve product details and order products using a custom token. It demonstrates various concepts such as structs, mappings, events and interactions with external contracts.
 
-## Next Steps
+Hence, a Skincare product Smart Contract is a decentralized and automated system that uses blockchain technology to ensure transparency, authenticity and safety of skincare products. By implementing Smart Contracts, consumers can have confidence in the product's origin, quality and safety, while manufacturers can ensure that their products are not counterfeited or tampered with. This technology can revolutionize the skincare industry by creating a trustless environment that benefits both consumers and manufacturers, ultimately leading to better product quality and safety.
+
+## Further Steps:
 
 Here are some relevant links that would aid your learning further.
 
